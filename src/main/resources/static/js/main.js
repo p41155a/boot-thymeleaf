@@ -29,7 +29,7 @@ function fire_ajax_submit() {
         dataType: 'text',
         success: function (formArray) {
         	console.log("SUCCESS : 박유진", formArray);
-        	window.location.href = "/users";
+        	window.location.href = "/users"; //Get방식
         	
         },
         error: function (e) {
