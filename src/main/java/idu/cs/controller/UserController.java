@@ -59,6 +59,10 @@ public class UserController {
 	public String getRegForm(Model model) {
 		return "register";
 	}
+	@GetMapping("/user-update-form")
+	public String getUpdateForm(Model model) {
+		return "update";
+	}
 	@GetMapping("/users")
 	public String getAllUser(Model model) {
 		model.addAttribute("users", userRepo.findAll());
@@ -90,11 +94,14 @@ public class UserController {
 		//return ResponseEntity.ok().body(user);
 	}
 	@PutMapping("/users/{id}") // @PatchMapping
-	   public String updateUser(@PathVariable(value = "id") Long userId, @Valid User userDetails, Model model) {
+	   public String updateUser(@PathVariable(value = "id") Long userId, @Valid User userDetails, Model model, HttpSession session) {
 	      User user = userRepo.findById(userId).get(); // user는 DB로 부터 읽어온 객체 
 	      user.setName(userDetails.getName()); // userDetails가 전송한 객체
+	      user.setUserId(userDetails.getUserId());
+	      user.setUserPw(userDetails.getUserPw());
 	      user.setCompany(userDetails.getCompany());
 	      userRepo.save(user); // 저장!
+	      session.setAttribute("user",user);
 	      return "redirect:/users";
 	}
 	@DeleteMapping("/users/{id}")
