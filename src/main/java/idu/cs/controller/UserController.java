@@ -16,14 +16,16 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import idu.cs.domain.User;
+import idu.cs.entity.UserEntity;
 import idu.cs.exception.ResourceNotFoundException;
 import idu.cs.repository.UserRepository;
+import idu.cs.service.UserService;
 
 @Controller	
 // Spring Framework 에게 이 클래스로부터 작성된 객체는 Controller 역활을 함을 알려줌
 //Spring이 이 클래스로부터 Bean 객체를 생성해서  등록할 수 있음
 public class UserController {
-	@Autowired UserRepository userRepo; // Dependency Injection
+	@Autowired UserService userService; // Dependency Injection
 	
 	@GetMapping("/")
 	public String home(Model model) {
@@ -34,9 +36,10 @@ public class UserController {
 		return "login";
 	}
 	@PostMapping("/login")
-	public String loginUser(@Valid User user, HttpSession session) {
+	public String loginUser(@Valid UserEntity user, HttpSession session) {
 		System.out.println("login process : ");
-		User sessionUser = userRepo.findByUserId(user.getUserId());
+		User sessionUser = 
+				userService.getUserByUserId(user.getUserId());
 		if(sessionUser == null) {
 			System.out.println("id error : ");
 			return "redirect:/user-login-form";
@@ -54,33 +57,35 @@ public class UserController {
 		// session.invalidate();
 		return "redirect:/";
 	}
+
+	@GetMapping("/users")
+	public String getAllUser(Model model, HttpSession session) {
+		//model.addAttibute("users", userRepo.findAll();
+		model.addAttribute("users", userService.getUsers());
+		return "userlist";
+	}
 	
 	@GetMapping("/user-register-form")
 	public String getRegForm(Model model) {
 		return "register";
 	}
+	
 	@GetMapping("/user-update-form")
 	public String getUpdateForm(Model model) {
 		return "update";
 	}
-	@GetMapping("/users")
-	public String getAllUser(Model model) {
-		model.addAttribute("users", userRepo.findAll());
-		return "userlist";
-	}
+	
+	
 	@PostMapping("/users")
 	public String createUser(@Valid User user, Model model) {
-		if(userRepo.save(user) != null) 
-			System.out.println("Database 등록");
-		else
-			System.out.println("Database 등록 실패");
-		model.addAttribute("users", userRepo.findAll());
-		return "redirect:/users"; //redirect 페이지를 바꾼다
+		userService.saveUser(user);
+		return "redirect:/users"; // get 방식으로 해당 url에 재지정함
 	}
+	/*
 	@GetMapping("/users/{id}")
 	public String getUserById(@PathVariable(value = "id") Long userId, Model model)
 			throws ResourceNotFoundException {
-		User user = userRepo.findById(userId).get(); //.orElseThrow(() -> new ResourceNotFoundException("User not found for this id :: " + userId));
+		UserEntity user = userRepo.findById(userId).get(); //.orElseThrow(() -> new ResourceNotFoundException("User not found for this id :: " + userId));
 		model.addAttribute("user",user);
 		return "user";
 		//return ResponseEntity.ok().body(user);
@@ -88,14 +93,14 @@ public class UserController {
 	@GetMapping("/users/fn")
 	public String getUserByName(@Param(value = "name") String name, Model model)
 			throws ResourceNotFoundException {
-		List<User> users = userRepo.findByName(name); //.orElseThrow(() -> new ResourceNotFoundException("User not found for this id :: " + userId));
+		List<UserEntity> users = userRepo.findByName(name); //.orElseThrow(() -> new ResourceNotFoundException("User not found for this id :: " + userId));
 		model.addAttribute("users",users);
 		return "userlist";
 		//return ResponseEntity.ok().body(user);
 	}
 	@PutMapping("/users/{id}") // @PatchMapping
-	   public String updateUser(@PathVariable(value = "id") Long userId, @Valid User userDetails, Model model, HttpSession session) {
-	      User user = userRepo.findById(userId).get(); // user는 DB로 부터 읽어온 객체 
+	   public String updateUser(@PathVariable(value = "id") Long userId, @Valid UserEntity userDetails, Model model, HttpSession session) {
+	      UserEntity user = userRepo.findById(userId).get(); // user는 DB로 부터 읽어온 객체 
 	      user.setName(userDetails.getName()); // userDetails가 전송한 객체
 	      user.setUserId(userDetails.getUserId());
 	      user.setUserPw(userDetails.getUserPw());
@@ -106,9 +111,10 @@ public class UserController {
 	}
 	@DeleteMapping("/users/{id}")
 	public String deleteUser(@PathVariable(value = "id") Long userId, Model model) {
-		User user = userRepo.findById(userId).get();
+		UserEntity user = userRepo.findById(userId).get();
 		userRepo.delete(user);
 		model.addAttribute("name", user.getName());
 		return "user-delete";
 	}
+	*/
 }
